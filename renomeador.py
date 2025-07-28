@@ -15,6 +15,7 @@ opcoes_regex = [
     ("YYYY-MM-DDTHH:MM:SS", r"(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2})"),
     ("YYYYMMDDHHMMSS", r"(\d{8})(\d{6})"),
     ("WhatsApp - Data e Hora (2025-07-27 15.06.02)", r"(\d{4}-\d{2}-\d{2}).*?(\d{2}\.\d{2}\.\d{2})")
+    ("WhatsApp - Nome do Arquivo (2023-07-19 à(s) 09.58.02)", r"(\d{4}-\d{2}-\d{2}).*?(\d{2}\.\d{2}\.\d{2})")
 ]
 
 def escolher_pasta():
@@ -23,24 +24,26 @@ def escolher_pasta():
     entrada_pasta.insert(0, caminho)  # insere novo caminho | insert new path
 
 def normalizar_datahora(data, hora):
-    data = re.sub(r"[^\d]", "-", data)[:10]  # substitui separadores por hífens | replace date separators
-    hora = hora.replace(":", "h").replace("m", "").replace("s", "")[:6]  # formata hora | format hour
-    return f"{data}_{hora[:2]}h{hora[2:4]}m{hora[4:6]}s"  # retorna formato final | return final format
+    data = re.sub(r"[^\d]", "-", data)[:10]  # Normaliza a data
+    hora = re.sub(r"[^\d]", "", hora)  # remove tudo que não for número
+    if len(hora) == 6:
+        return f"{data}_{hora[:2]}h{hora[2:4]}m{hora[4:6]}s"
+    else:
+        return f"{data}_00h00m00s"
 
 def extrair_data_arquivo(caminho_arquivo, regex):
+    nome_arquivo = os.path.basename(caminho_arquivo)  # pega apenas o nome, sem o caminho | get only filename
     try:
-        with open(caminho_arquivo, 'r', encoding='utf-8', errors='ignore') as f:  # abre o arquivo como texto | open file as text
-            conteudo = f.read()  # lê conteúdo inteiro | read content
-            padrao = re.compile(regex)  # compila a regex fornecida | compile given regex
-            match = padrao.search(conteudo)  # procura o padrão no conteúdo | search pattern in content
-            if match:
-                if len(match.groups()) >= 2:  # se houver pelo menos 2 grupos (data + hora) | if there are at least 2 groups
-                    return normalizar_datahora(match.group(1), match.group(2))  # normaliza e retorna | normalize and return
-                else:
-                    return match.group(0)  # retorna grupo único, sem normalização | return single group
+        padrao = re.compile(regex)
+        match = padrao.search(nome_arquivo)
+        if match:
+            if len(match.groups()) >= 2:
+                return normalizar_datahora(match.group(1), match.group(2))
+            else:
+                return match.group(0)
     except Exception as e:
-        print(f"Erro ao ler {caminho_arquivo}: {e}")  # loga erro | log error
-    return None  # retorno padrão | default return
+        print(f"[ERRO] {nome_arquivo}: {e}")
+    return None
 
 def renomear():
     pasta = entrada_pasta.get()  # obtém caminho da pasta | get folder path
