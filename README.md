@@ -17,3 +17,6 @@ opções de regex aceitas:
 "YYYYMMDDHHMMSS"
 "WhatsApp - Data e Hora (2025-07-27 15.06.02)"
 "WhatsApp - Nome do Arquivo (2023-07-19 à(s) 09.58.02)"
+
+link para download:
+https://github.com/philipepinho/REAL/tree/main/dist
