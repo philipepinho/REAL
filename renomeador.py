@@ -87,6 +87,14 @@ def renomear():
 
     messagebox.showinfo("Concluído", f"{renomeados} arquivos copiados e renomeados com sucesso.")
 
+# Função para escolher a pasta via diálogo do sistema | Folder picker for path input
+def escolher_pasta():
+    pasta_selecionada = filedialog.askdirectory()  # Abre o seletor de pastas | Opens folder picker
+    if pasta_selecionada:
+        entrada_pasta.delete(0, tk.END)             # Limpa o campo atual | Clears the current entry
+        entrada_pasta.insert(0, pasta_selecionada)  # Insere o caminho selecionado | Inserts selected path
+
+
 # Interface Tkinter
 janela = tk.Tk()
 janela.title("Renomeador Automático por Timestamp")
