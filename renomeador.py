@@ -1,6 +1,23 @@
 import os, shutil, tkinter as tk  # bibliotecas padrão para arquivos, cópias e interface gráfica | std libraries for file ops and GUI
 from tkinter import filedialog, messagebox, ttk  # módulos específicos do Tkinter | specific Tkinter modules
 import re  # biblioteca para expressões regulares | regex library
+import datetime  # para registrar data e hora | for timestamps
+import traceback  # para capturar rastros completos de erro | full error trace
+
+def registrar_erro(mensagem, excecao=None):
+    """Grava erros em um arquivo de log local | Logs errors to local file"""
+    try:
+        nome_arquivo = "renomeador_error.log"
+        caminho_log = os.path.join(os.getcwd(), nome_arquivo)  # mesmo diretório do .py/.exe | same folder
+        with open(caminho_log, "a", encoding="utf-8") as log:
+            agora = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            log.write(f"[{agora}] {mensagem}\n")
+            if excecao:
+                log.write(traceback.format_exc())
+                log.write("\n")
+    except Exception as e:
+        # Evita travar mesmo se o log falhar | fail-safe log fallback
+        print(f"[LOG ERROR] Falha ao registrar log: {e}")
 
 # Lista com as 10 opções de regex e sua descrição legível | List of 10 regex patterns and user-friendly labels
 opcoes_regex = [
@@ -14,7 +31,7 @@ opcoes_regex = [
     ("YYYY/MM/DD_HH:MM:SS", r"(\d{4}/\d{2}/\d{2})_(\d{2}:\d{2}:\d{2})"),
     ("YYYY-MM-DDTHH:MM:SS", r"(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2})"),
     ("YYYYMMDDHHMMSS", r"(\d{8})(\d{6})"),
-    ("WhatsApp - Data e Hora (2025-07-27 15.06.02)", r"(\d{4}-\d{2}-\d{2}).*?(\d{2}\.\d{2}\.\d{2})")
+    ("WhatsApp - Data e Hora (2025-07-27 15.06.02)", r"(\d{4}-\d{2}-\d{2}).*?(\d{2}\.\d{2}\.\d{2})"),
     ("WhatsApp - Nome do Arquivo (2023-07-19 à(s) 09.58.02)", r"(\d{4}-\d{2}-\d{2}).*?(\d{2}\.\d{2}\.\d{2})")
 ]
 
@@ -32,13 +49,29 @@ def normalizar_datahora(data, hora):
         return f"{data}_00h00m00s"
 
 def extrair_data_arquivo(caminho_arquivo, regex):
-    nome_arquivo = os.path.basename(caminho_arquivo)  # pega apenas o nome, sem o caminho | get only filename
+    nome_arquivo = os.path.basename(caminho_arquivo)  # obtém apenas o nome do arquivo | get filename only
     try:
         padrao = re.compile(regex)
         match = padrao.search(nome_arquivo)
         if match:
             if len(match.groups()) >= 2:
-                return normalizar_datahora(match.group(1), match.group(2))
+                # Elimina caracteres não numéricos | Remove non-numeric characters
+                data_raw = re.sub(r"[^\d]", "", match.group(1))  # exemplo: 2023-07-19 → 20230719
+                hora_raw = re.sub(r"[^\d]", "", match.group(2))  # exemplo: 09.58.02 → 095802
+
+                # Formata data como AAAA-MM-DD | Format date
+                if len(data_raw) == 8:
+                    data_fmt = f"{data_raw[0:4]}-{data_raw[4:6]}-{data_raw[6:8]}"
+                else:
+                    data_fmt = "0000-00-00"
+
+                # Formata hora como HHhMMmSSs | Format hour
+                if len(hora_raw) == 6:
+                    hora_fmt = f"{hora_raw[0:2]}h{hora_raw[2:4]}m{hora_raw[4:6]}s"
+                else:
+                    hora_fmt = "00h00m00s"
+
+                return f"{data_fmt}_{hora_fmt}"
             else:
                 return match.group(0)
     except Exception as e:

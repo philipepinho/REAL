@@ -1,5 +1,5 @@
 ('C:\\Users\\phili\\OneDrive\\ENGENHERIA DE SOFTWARE - UFMT - 2025-29\\000 - '
- 'PROGRAMAS\\REAL\\build\\renomeador\\PYZ-00.pyz',
+ 'PROGRAMAS\\real\\build\\renomeador\\PYZ-00.pyz',
  [('__future__', 'C:\\Python\\Lib\\__future__.py', 'PYMODULE'),
   ('_colorize', 'C:\\Python\\Lib\\_colorize.py', 'PYMODULE'),
   ('_compat_pickle', 'C:\\Python\\Lib\\_compat_pickle.py', 'PYMODULE'),
